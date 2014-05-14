@@ -15,18 +15,12 @@ this.pos_y = pos_y;
     }
 }
 
-Board.prototype.MakeMove = function (mouse_x, mouse_y, player_id) {
-    if(mouse_x < this.pos_x || mouse_x > (this.pos_x + this.width) || mouse_y < this.pos_y || mouse_y > (this.pos_y + this.height)){
-		return false;
-	}
-    var board_pos = this.ConvertMousePosToBoard(mouse_x, mouse_y);    
-    row = board_pos[0];
-    column = board_pos[1];
+Board.prototype.MakeMove = function (row, column, player_id) {       
     var valid = (this.board[row][column] === 0);
-    //if (this.board[row][column] == 0) {
+    if (this.board[row][column] == 0) {
         this.board[row][column] = player_id;        
-    //}
-    return true;
+    }
+    return valid;
 }
 
 Board.prototype.ConvertMousePosToBoard = function (mouse_x, mouse_y) {

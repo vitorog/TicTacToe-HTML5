@@ -7,11 +7,13 @@ var BOARD_BORDER_SIZE = 10;
 var BOARD_WIDTH = CANVAS_WIDTH / 2;
 var BOARD_HEIGHT = CANVAS_HEIGHT / 2;
 var CURRENT_PLAYER = 1;
-var AI_ON = 0;
+var AI_ON = 1;
 var GAME_FINISHED = false;
 var WINNER = -1; // 0 = Draw
 var BOARD_POS_X = 50;
 var BOARD_POS_Y = 50;
+var AI_PLAYER;
+var CURRENT_BOARD;
 
 function SetupGame() {
     CANVAS = document.getElementById("game_canvas");
@@ -38,13 +40,13 @@ function ClearScreen() {
 
 function Update() {
     ClearScreen();
-    board.Draw();
+    CURRENT_BOARD.Draw();
 	DrawGameInfo();
 }
 
 function Reset() {    
     GAME_FINISHED = false;
-    board.Reset();
+    CURRENT_BOARD.Reset();
     CURRENT_PLAYER = 1;
     Update();
 }
@@ -57,8 +59,14 @@ function OnMouseClick(evt) {
     };
 }
 
-function MakeMove(x, y) {   
-    var valid = this.board.MakeMove(x, y, CURRENT_PLAYER);
+function MakeMove(mouse_x, mouse_y) {   
+if((AI_ON && CURRENT_PLAYER==2) || mouse_x < BOARD_POS_X || mouse_x > BOARD_POS_X + BOARD_WIDTH || mouse_y < BOARD_POS_Y || mouse_y > BOARD_POS_Y + BOARD_HEIGHT){
+		return;
+	}
+    var board_pos = CURRENT_BOARD.ConvertMousePosToBoard(mouse_x, mouse_y);    
+	 row = board_pos[0];
+    column = board_pos[1];
+	var valid = CURRENT_BOARD.MakeMove(row, column, CURRENT_PLAYER);
     if (valid) {
         CheckWin();
 	if(!GAME_FINISHED){
@@ -101,10 +109,10 @@ if(!GAME_FINISHED){
 }
 
 function CheckWin() {
-    if (board.CheckWin()) {
+    if (CURRENT_BOARD.CheckWin()) {
         GAME_FINISHED = true;
         WINNER = CURRENT_PLAYER;
-    } else if(!board.HasValidMoves()) {
+    } else if(!CURRENT_BOARD.HasValidMoves()) {
         GAME_FINISHED = true;
         WINNER = 0;
     }
@@ -113,6 +121,12 @@ function CheckWin() {
 function AlternatePlayers() {
     if (CURRENT_PLAYER === 1) {
         CURRENT_PLAYER = 2;
+	if(AI_ON){
+		move_pos = AI_PLAYER.MakeMove(CURRENT_BOARD);
+		row = move_pos[0];
+		column = move_pos[1];
+		CURRENT_BOARD.MakeMove(row,column,CURRENT_PLAYER);
+	}
     } else {
         CURRENT_PLAYER = 1;
     }
@@ -122,7 +136,8 @@ function AlternatePlayers() {
 
 function main() {
     SetupGame();
-    board = new Board(BOARD_POS_X,BOARD_POS_Y,BOARD_WIDTH,BOARD_HEIGHT);  
+    CURRENT_BOARD = new Board(BOARD_POS_X,BOARD_POS_Y,BOARD_WIDTH,BOARD_HEIGHT);  
+    AI_PLAYER = new AiPlayer();
     Update();    
 }
 
