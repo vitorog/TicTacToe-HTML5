@@ -4,12 +4,14 @@ var CONTEXT;
 var CANVAS_WIDTH = 800;
 var CANVAS_HEIGHT = 600;
 var BOARD_BORDER_SIZE = 10;
-var BOARD_WIDTH = CANVAS_WIDTH;
-var BOARD_HEIGHT = CANVAS_HEIGHT;
+var BOARD_WIDTH = CANVAS_WIDTH / 2;
+var BOARD_HEIGHT = CANVAS_HEIGHT / 2;
 var CURRENT_PLAYER = 1;
 var AI_ON = 0;
 var GAME_FINISHED = false;
 var WINNER = -1; // 0 = Draw
+var BOARD_POS_X = 50;
+var BOARD_POS_Y = 50;
 
 function SetupGame() {
     CANVAS = document.getElementById("game_canvas");
@@ -36,7 +38,8 @@ function ClearScreen() {
 
 function Update() {
     ClearScreen();
-    board.Draw();    
+    board.Draw();
+	DrawGameInfo();
 }
 
 function Reset() {    
@@ -58,9 +61,43 @@ function MakeMove(x, y) {
     var valid = this.board.MakeMove(x, y, CURRENT_PLAYER);
     if (valid) {
         CheckWin();
-        AlternatePlayers();
+	if(!GAME_FINISHED){
+	        AlternatePlayers();
+	}
         Update();
     }   
+}
+
+function DrawGameInfo() {
+	CONTEXT.fillStyle = "black";
+	CONTEXT.font = "bold 24px Arial";
+if(!GAME_FINISHED){
+       CONTEXT.fillText("Current player: " + parseInt(CURRENT_PLAYER), 50, 30);
+		if(CURRENT_PLAYER == 1){
+		CONTEXT.beginPath();
+                CONTEXT.arc(265, 22, 10, 0, 2 * Math.PI, false);
+                CONTEXT.lineWidth = 2;
+                CONTEXT.strokeStyle = '#003300';
+                CONTEXT.stroke();
+		}else{
+			CONTEXT.beginPath();
+		        CONTEXT.moveTo(255,15);
+		        CONTEXT.lineTo(275,30);
+		        CONTEXT.lineWidth = 2;
+		        CONTEXT.strokeStyle = '#003300';
+		        CONTEXT.stroke();
+
+			CONTEXT.beginPath();
+		        CONTEXT.moveTo(275,15);
+		        CONTEXT.lineTo(255,30);
+		        CONTEXT.lineWidth = 2;
+		        CONTEXT.strokeStyle = '#003300';
+		        CONTEXT.stroke();		 
+		}
+}else{
+	
+		  CONTEXT.fillText("Player " + parseInt(CURRENT_PLAYER) + " Wins! Click to restart!", 50,30); 
+	}
 }
 
 function CheckWin() {
@@ -85,7 +122,7 @@ function AlternatePlayers() {
 
 function main() {
     SetupGame();
-    board = new Board(CANVAS_WIDTH,CANVAS_HEIGHT);  
+    board = new Board(BOARD_POS_X,BOARD_POS_Y,BOARD_WIDTH,BOARD_HEIGHT);  
     Update();    
 }
 
