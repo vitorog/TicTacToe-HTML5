@@ -58,6 +58,7 @@
     <Content Include="images\smalllogo.png" />
     <Content Include="images\splashscreen.png" />
     <Content Include="images\storelogo.png" />
+    <Content Include="js\ai.js" />
     <Content Include="js\board.js" />
     <Content Include="js\game.js" />
     <None Include="TicTacToe-HTML5_TemporaryKey.pfx" />
