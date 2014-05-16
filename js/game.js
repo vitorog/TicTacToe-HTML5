@@ -1,29 +1,36 @@
 ﻿//GLOBAL VARIABLES
 var CANVAS;
 var CONTEXT;
-var CANVAS_WIDTH = 800;
-var CANVAS_HEIGHT = 600;
+var CANVAS_WIDTH;
+var CANVAS_HEIGHT;
 var BOARD_BORDER_SIZE = 10;
-var BOARD_WIDTH = CANVAS_WIDTH / 2;
-var BOARD_HEIGHT = CANVAS_HEIGHT / 2;
+var BOARD_WIDTH;
+var BOARD_HEIGHT;
 var STARTING_PLAYER = 1;
-var AI_ON = 0;
 var GAME_FINISHED = false;
-var WINNER = -1;
-// 0 = Draw
+var WINNER = -1; // 0 = Draw
 var BOARD_POS_X = 50;
 var BOARD_POS_Y = 50;
-var CIRCLE_RADIUS = BOARD_WIDTH / 12;
-var X_LINE_SIZE = BOARD_WIDTH / 6;
-
+var CIRCLE_RADIUS;
+var X_LINE_SIZE;
+var AI_ON = 1;
 var AI_PLAYER;
+var AI_PLAYER_ID = 2;
+var AI_SPEED = 250; //In milliseconds. This is just a delay so that the game information is updated to display that the current player is the AI. If set to 0, AI will play instantly
 var CURRENT_GAME_STATE;
 
 function SetupGame() {
 	CANVAS = document.getElementById("game_canvas");
+	// size = Math.max(window.innerWidth,window.innerHeight)
+	CANVAS.width = window.innerWidth / 2;
+	CANVAS.height = window.innerWidth / 2;
 	CONTEXT = CANVAS.getContext("2d");
-	CANVAS.width = CANVAS_WIDTH;
-	CANVAS.height = CANVAS_HEIGHT;
+	CANVAS_WIDTH = CANVAS.width;
+	CANVAS_HEIGHT = CANVAS.height;
+	BOARD_WIDTH = 90 * CANVAS_WIDTH / 100;
+	BOARD_HEIGHT = 90 * CANVAS_HEIGHT / 100;
+	CIRCLE_RADIUS = BOARD_WIDTH / 12;
+	X_LINE_SIZE = BOARD_WIDTH / 6;
 
 	CANVAS.addEventListener('mousedown', function(evt) {
 		if (!GAME_FINISHED) {
@@ -51,7 +58,9 @@ function Update() {
 function Reset() {
 	GAME_FINISHED = false;
 	STARTING_PLAYER = 1;
-	CURRENT_GAME_STATE.Reset(STARTING_PLAYER);
+	CURRENT_GAME_STATE.Reset(STARTING_PLAYER);	
+	delete AI_PLAYER;
+	AI_PLAYER = new AiPlayer(AI_PLAYER_ID);
 	Update();
 }
 
@@ -64,20 +73,20 @@ function OnMouseClick(evt) {
 }
 
 function ConvertMousePosToBoardPos(mouse_x, mouse_y) {
-	var column = 0;
-	var row = 0;
-	if (mouse_x <= BOARD_POS_X + (BOARD_WIDTH / 3)) {
+	var column = -1;
+	var row = -1;
+	if (mouse_x >= BOARD_POS_X && mouse_x <= BOARD_POS_X + (BOARD_WIDTH / 3)) {
 		column = 0;
-	} else if (mouse_x <= BOARD_POS_X + (2 * (BOARD_WIDTH / 3))) {
+	} else if (mouse_x > BOARD_POS_X + (BOARD_WIDTH / 3) && mouse_x <= BOARD_POS_X + (2 * (BOARD_WIDTH / 3))) {
 		column = 1;
-	} else {
+	} else if (mouse_x > BOARD_POS_X + (2 * (BOARD_WIDTH / 3)) && mouse_x < BOARD_POS_X + BOARD_WIDTH){
 		column = 2;
 	}
-	if (mouse_y <= BOARD_POS_Y + (BOARD_HEIGHT / 3)) {
+	if (mouse_y >= BOARD_POS_Y && mouse_y <= BOARD_POS_Y + (BOARD_HEIGHT / 3)) {
 		row = 0;
-	} else if (mouse_y <= BOARD_POS_Y + (2 * (BOARD_HEIGHT / 3))) {
+	} else if (mouse_y > BOARD_POS_Y + (BOARD_HEIGHT / 3) && mouse_y <= BOARD_POS_Y + (2 * (BOARD_HEIGHT / 3))) {
 		row = 1;
-	} else {
+	} else if(mouse_y > BOARD_POS_Y + (2 * (BOARD_HEIGHT / 3)) && mouse_y <= BOARD_POS_Y + BOARD_HEIGHT){
 		row = 2;
 	}
 	return [row, column];
@@ -91,28 +100,56 @@ function MakeMove(mouse_x, mouse_y) {
 	var board_pos = ConvertMousePosToBoardPos(mouse_x, mouse_y);
 	row = board_pos[0];
 	column = board_pos[1];
-	if(CURRENT_GAME_STATE.board[row][column] == 0){
+	if(row != -1 && column != -1 && CURRENT_GAME_STATE.board[row][column] == 0){
 		CURRENT_GAME_STATE.MakeMove(row,column);
-		var game_over = CURRENT_GAME_STATE.IsGameOver();		
-		if(game_over == -1){
-			CURRENT_GAME_STATE.AlternatePlayers();
-		}else{				
-			GAME_FINISHED = true;
-			if(game_over != 0){
-				WINNER = CURRENT_GAME_STATE.current_player;
-			}else{
-				WINNER = 0;
-			}
-		}
+		CheckGameState();		
 	}	
 	Update();	
 }
+
+function AiMove()
+{
+	result = AI_PLAYER.MakeMove(CURRENT_GAME_STATE);
+	row = result[0];
+	column = result[1];	
+	CURRENT_GAME_STATE.MakeMove(row,column);	
+	CheckGameState();
+	Update();		
+}
+
+function CheckGameState()
+{
+	var game_over = CURRENT_GAME_STATE.IsGameOver();		
+	if(game_over == -1){
+		CURRENT_GAME_STATE.AlternatePlayers();
+		if(CURRENT_GAME_STATE.current_player == 2 && AI_ON){			
+			setTimeout( AiMove, AI_SPEED );		
+		}		
+	}else{				
+		GAME_FINISHED = true;
+		if(game_over != 0){
+			WINNER = CURRENT_GAME_STATE.current_player;
+		}else{
+			WINNER = 0;
+		}
+	}
+}
+
+
 
 function DrawGameInfo() {
 	CONTEXT.fillStyle = "black";
 	CONTEXT.font = "bold 24px Arial";
 	if (!GAME_FINISHED) {
-		CONTEXT.fillText("Current player: " + parseInt(CURRENT_GAME_STATE.current_player), 50, 30);
+		if(!AI_ON){
+			CONTEXT.fillText("Current player: " + parseInt(CURRENT_GAME_STATE.current_player), 50, 30);	
+		}else{
+			if(CURRENT_GAME_STATE.current_player == AI_PLAYER_ID){
+				CONTEXT.fillText("Current player: AI", 50, 30);
+			}else{
+				CONTEXT.fillText("Current player: " + parseInt(CURRENT_GAME_STATE.current_player), 50, 30);
+			}
+		}		
 		if (CURRENT_GAME_STATE.current_player == 1) {
 			CONTEXT.beginPath();
 			CONTEXT.arc(265, 22, 10, 0, 2 * Math.PI, false);
@@ -135,7 +172,19 @@ function DrawGameInfo() {
 			CONTEXT.stroke();
 		}
 	} else {
-		CONTEXT.fillText("Player " + parseInt(CURRENT_GAME_STATE.current_player) + " Wins! Click to restart!", 50, 30);
+		if(WINNER == 0){
+			CONTEXT.fillText("Draw! Click to restart!", 50, 30);
+		}else{
+			if(!AI_ON){
+				CONTEXT.fillText("Player " + parseInt(CURRENT_GAME_STATE.current_player) + " Wins! Click to restart!", 50, 30);	
+			}else{
+				if(CURRENT_GAME_STATE.current_player == AI_PLAYER_ID){
+					CONTEXT.fillText("AI Player Wins! Click to restart!", 50, 30);
+				}else{
+					CONTEXT.fillText("You win! Click to restart!", 50, 30);
+				}
+			}			
+		}
 	}
 }
 
@@ -226,7 +275,7 @@ function DrawBoard() {
 function main() {
 	SetupGame();
 	CURRENT_GAME_STATE = new GameState(STARTING_PLAYER);
-	AI_PLAYER = new AiPlayer();
+	AI_PLAYER = new AiPlayer(AI_PLAYER_ID);	
 	Update();
 }
 
