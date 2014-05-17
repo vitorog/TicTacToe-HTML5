@@ -10,7 +10,7 @@
 		for (var j = 0; j < 3; j++) {
 			this.board[i][j] = 0;
 		}
-	}	
+	}
 }
 
 GameState.prototype.CopyGameState = function(game_state) {

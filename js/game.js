@@ -16,7 +16,7 @@ var X_LINE_SIZE;
 var AI_ON = 1;
 var AI_PLAYER;
 var AI_PLAYER_ID = 2;
-var AI_SPEED = 250; //In milliseconds. This is just a delay so that the game information is updated to display that the current player is the AI. If set to 0, AI will play instantly
+var AI_SPEED = 150; //In milliseconds. This is just a delay so that the game information is updated to display that the current player is the AI. If set to 0, AI will play instantly
 var CURRENT_GAME_STATE;
 
 function SetupGame() {
