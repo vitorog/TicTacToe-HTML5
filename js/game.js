@@ -3,7 +3,6 @@ var CANVAS;
 var CONTEXT;
 var CANVAS_WIDTH;
 var CANVAS_HEIGHT;
-var BOARD_BORDER_SIZE = 10;
 var BOARD_WIDTH;
 var BOARD_HEIGHT;
 var STARTING_PLAYER = 1;
@@ -13,7 +12,7 @@ var BOARD_POS_X = 50;
 var BOARD_POS_Y = 50;
 var CIRCLE_RADIUS;
 var X_LINE_SIZE;
-var AI_ON = 1;
+var AI_ON = true;
 var AI_PLAYER;
 var AI_PLAYER_ID = 2;
 var AI_SPEED = 150; //In milliseconds. This is just a delay so that the game information is updated to display that the current player is the AI. If set to 0, AI will play instantly
@@ -45,7 +44,7 @@ function SetupGame() {
 
 function ClearScreen() {
 	CONTEXT.clearRect(0, 0, CANVAS.width, CANVAS.height);
-	CONTEXT.fillStyle = "#FFFFFF";
+	CONTEXT.fillStyle = "#010101";
 	CONTEXT.fillRect(0, 0, CANVAS.width, CANVAS.height);
 }
 
@@ -138,7 +137,7 @@ function CheckGameState()
 
 
 function DrawGameInfo() {
-	CONTEXT.fillStyle = "black";
+	CONTEXT.fillStyle = "white";
 	CONTEXT.font = "bold 24px Arial";
 	if (!GAME_FINISHED) {
 		if(!AI_ON){
@@ -154,21 +153,21 @@ function DrawGameInfo() {
 			CONTEXT.beginPath();
 			CONTEXT.arc(265, 22, 10, 0, 2 * Math.PI, false);
 			CONTEXT.lineWidth = 2;
-			CONTEXT.strokeStyle = '#003300';
+			CONTEXT.strokeStyle = '#FFFFFF';
 			CONTEXT.stroke();
 		} else {
 			CONTEXT.beginPath();
 			CONTEXT.moveTo(255, 15);
 			CONTEXT.lineTo(275, 30);
 			CONTEXT.lineWidth = 2;
-			CONTEXT.strokeStyle = '#003300';
+			CONTEXT.strokeStyle = '#FFFFFF';
 			CONTEXT.stroke();
 
 			CONTEXT.beginPath();
 			CONTEXT.moveTo(275, 15);
 			CONTEXT.lineTo(255, 30);
 			CONTEXT.lineWidth = 2;
-			CONTEXT.strokeStyle = '#003300';
+			CONTEXT.strokeStyle = '#FFFFFF';
 			CONTEXT.stroke();
 		}
 	} else {
@@ -190,7 +189,7 @@ function DrawGameInfo() {
 
 function DrawBoard() {
 	var win_state = CURRENT_GAME_STATE.win_state;
-	CONTEXT.strokeStyle = "#000000";
+	CONTEXT.strokeStyle = "#FFFFFF";
 	CONTEXT.lineWidth = 2;
 	CONTEXT.strokeRect(BOARD_POS_X, BOARD_POS_Y, BOARD_WIDTH, BOARD_HEIGHT);
 	for (var i = 0; i < 2; i++) {
@@ -213,7 +212,6 @@ function DrawBoard() {
 				CONTEXT.beginPath();
 				CONTEXT.arc(pos_column, pos_row, CIRCLE_RADIUS, 0, 2 * Math.PI, false);
 				CONTEXT.lineWidth = 2;
-				CONTEXT.strokeStyle = '#003300';
 				CONTEXT.stroke();
 			} else if (CURRENT_GAME_STATE.board[i][j] == 2) {
 				var x1 = pos_column - X_LINE_SIZE / 2;
@@ -222,14 +220,12 @@ function DrawBoard() {
 				CONTEXT.moveTo(x1, pos_row - X_LINE_SIZE / 2);
 				CONTEXT.lineTo(x2, pos_row + X_LINE_SIZE / 2);
 				CONTEXT.lineWidth = 2;
-				CONTEXT.strokeStyle = '#003300';
 				CONTEXT.stroke();
 
 				CONTEXT.beginPath();
 				CONTEXT.moveTo(x2, pos_row - X_LINE_SIZE / 2);
 				CONTEXT.lineTo(x1, pos_row + X_LINE_SIZE / 2);
 				CONTEXT.lineWidth = 2;
-				CONTEXT.strokeStyle = '#003300';
 				CONTEXT.stroke();
 			}
 		}
@@ -274,6 +270,9 @@ function DrawBoard() {
 
 function main() {
 	SetupGame();
+	var gui = new dat.GUI();
+	gui.add(this,'AI_ON').name('Play vs. CPU');	
+	gui.add(this,'Reset');
 	CURRENT_GAME_STATE = new GameState(STARTING_PLAYER);
 	AI_PLAYER = new AiPlayer(AI_PLAYER_ID);	
 	Update();
